@@ -9,7 +9,7 @@ func RealEscapeString(value string) string {
 	var sb strings.Builder
 	// Source: #789 escape_string_for_mysql https://github.com/mysql/mysql-server/blob/5.7/mysys/charset.c
 	// Adding: % and _
-	for _, v := range []byte(value) {
+	for _, v := range value {
 		switch v {
 		case '\n':
 			sb.WriteByte('\\')
@@ -39,7 +39,7 @@ func RealEscapeString(value string) string {
 			sb.WriteByte('\\')
 			sb.WriteByte('%')
 		default:
-			sb.WriteByte(v)
+			sb.WriteRune(v)
 		}
 	}
 	return sb.String()
