@@ -4,7 +4,7 @@ import (
 	"strings"
 )
 
-// RealEscapeString escapes a string as mysql-server does.
+// RealEscapeString escapes a string as mysql-server does. It also escapes `%` and `_`.
 func RealEscapeString(value string) string {
 	var sb strings.Builder
 	// Source: #789 escape_string_for_mysql https://github.com/mysql/mysql-server/blob/5.7/mysys/charset.c
@@ -38,6 +38,40 @@ func RealEscapeString(value string) string {
 		case '%':
 			sb.WriteByte('\\')
 			sb.WriteByte('%')
+		default:
+			sb.WriteRune(v)
+		}
+	}
+	return sb.String()
+}
+
+// RealRealEscapeString escapes a string as mysql-server does. This does not escape `%` and `_`.
+func RealRealEscapeString(value string) string {
+	var sb strings.Builder
+	// Source: #789 escape_string_for_mysql https://github.com/mysql/mysql-server/blob/5.7/mysys/charset.c
+	for _, v := range value {
+		switch v {
+		case '\n':
+			sb.WriteByte('\\')
+			sb.WriteByte('n')
+		case '\r':
+			sb.WriteByte('\\')
+			sb.WriteByte('r')
+		case 0:
+			sb.WriteByte('\\')
+			sb.WriteByte('0')
+		case '\\':
+			sb.WriteByte('\\')
+			sb.WriteByte('\\')
+		case '\'':
+			sb.WriteByte('\\')
+			sb.WriteByte('\'')
+		case '"':
+			sb.WriteByte('\\')
+			sb.WriteByte('"')
+		case '\032':
+			sb.WriteByte('\\')
+			sb.WriteByte('Z')
 		default:
 			sb.WriteRune(v)
 		}
